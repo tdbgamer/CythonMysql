@@ -51,7 +51,7 @@ cdef class Cursor:
         self.close()
 
     def fetchone(self):
-
+        pass
 
     def execute(self, query):
         self._is_closed()
@@ -63,7 +63,6 @@ cdef class Cursor:
             self._store_description(result)
             row = mysql_fetch_row(result)
             while row:
-
                 row = mysql_fetch_row(result)
             mysql_free_result(result)
 

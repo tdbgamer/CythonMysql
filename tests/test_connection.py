@@ -1,5 +1,6 @@
 import pytest
-from mysql.connection import Connection, MySqlException
+from mysql.connection import Connection
+from mysql.exceptions import MySqlException
 
 
 def test_good_queries(db):

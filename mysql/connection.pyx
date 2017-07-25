@@ -1,5 +1,6 @@
 from cursors cimport Cursor
 from errors cimport raise_error
+from exceptions import ProgrammingError
 
 cdef class Connection:
     def __cinit__(self, str host=None, str user=None, str passwd=None, str db=None, unsigned int port=3306):
@@ -14,7 +15,21 @@ cdef class Connection:
     def __dealloc__(self):
         self.close()
 
+    def __bool__(self):
+        return bool(<bint> self.conn)
+
+    def _check_closed(self):
+        if not self.conn:
+            raise ProgrammingError('Connection closed')
+
+    def ping(self):
+        self._check_closed()
+        if mysql_ping(self.conn):
+            raise_error(self.conn)
+        return True
+
     def cursor(self):
+        self._check_closed()
         return Cursor(self)
 
     def close(self):
@@ -23,11 +38,13 @@ cdef class Connection:
             self.conn = NULL
 
     def commit(self):
+        self._check_closed()
         error = mysql_commit(self.conn)
         if error:
             raise_error(self.conn)
 
     def rollback(self):
+        self._check_closed()
         error = mysql_rollback(self.conn)
         if error:
             raise_error(self.conn)

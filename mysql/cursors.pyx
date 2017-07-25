@@ -9,6 +9,7 @@ cdef class Cursor:
         self.rowcount = -1
 
     cdef _is_closed(self):
+        self._is_connection_closed()
         if self.closed:
             raise ProgrammingError('Cursor closed')
 
@@ -32,6 +33,10 @@ cdef class Cursor:
                 field.flags & NOT_NULL_FLAG != NOT_NULL_FLAG
             ))
         self.description = tuple(description)
+
+    def _is_connection_closed(self):
+        if not self.conn.conn:
+            raise ProgrammingError('Connection closed')
 
     cdef _raise_error(self):
         raise_error(self.conn.conn)

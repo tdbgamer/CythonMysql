@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 
 def str_to_set(char * input):
     pass
@@ -24,7 +24,7 @@ m_to_p = {
     MYSQL_TYPE_YEAR: int,
     MYSQL_TYPE_NEWDATE: lambda x: datetime.strptime(x.decode('utf-8'), '%Y-%m-%d').date(),
     MYSQL_TYPE_VARCHAR: str,
-    MYSQL_TYPE_BIT: bytes,
+    MYSQL_TYPE_BIT: lambda x: int.from_bytes(x, byteorder='big'),
     MYSQL_TYPE_NEWDECIMAL: float,
     MYSQL_TYPE_ENUM: str,
     MYSQL_TYPE_SET: str_to_set,

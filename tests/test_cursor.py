@@ -11,8 +11,9 @@ def test_iterating_over_cursor(db):
 
     with db.cursor() as cursor:
         cursor.execute('select id from blah')
+        values = set(test_values)
         for (id,) in cursor:
-            assert id in test_values
+            assert id in values
 
 
 def test_cursor_close(db):

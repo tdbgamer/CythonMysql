@@ -1,5 +1,6 @@
 from errors cimport raise_error
 from connection cimport Connection
+from converter cimport mysql_to_python
 from exceptions import ProgrammingError
 
 cdef class Cursor:
@@ -7,9 +8,16 @@ cdef class Cursor:
         self.conn = conn
         self.closed = 0
         self.rowcount = -1
+        self._result = NULL
+        self._executed = False
+
+    def __dealloc__(self):
+        if self._result:
+            mysql_free_result(self._result)
 
     cdef _is_closed(self):
-        self._is_connection_closed()
+        if not self.conn.conn:
+            raise ProgrammingError('Connection closed')
         if self.closed:
             raise ProgrammingError('Cursor closed')
 
@@ -34,15 +42,24 @@ cdef class Cursor:
             ))
         self.description = tuple(description)
 
-    def _is_connection_closed(self):
-        if not self.conn.conn:
-            raise ProgrammingError('Connection closed')
-
     cdef _raise_error(self):
         raise_error(self.conn.conn)
 
+    cdef _has_executed(self):
+        if not self._executed:
+            raise ProgrammingError('execute() has not been called yet')
+
     def close(self):
         self.closed = 1
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        row = self.fetchone()
+        if not row:
+            raise StopIteration
+        return row
 
     def __enter__(self):
         self._is_closed()
@@ -55,19 +72,27 @@ cdef class Cursor:
             self.conn.rollback()
         self.close()
 
+    cdef MYSQL_ROW _get_row(self):
+        return mysql_fetch_row(self._result)
+
     def fetchone(self):
-        pass
+        cdef MYSQL_ROW row
+        self._has_executed()
+        row = self._get_row()
+        if not row:
+            return None
+        lengths = mysql_fetch_lengths(self._result)
+        return tuple(mysql_to_python(row[i], self.description[i], lengths[i]) for i in range(len(self.description)))
+        # return tuple(row[i] for i in range(len(self.description)))
 
     def execute(self, query):
         self._is_closed()
+        self._executed = True
         if mysql_real_query(self.conn.conn, query.encode('utf-8'), len(query)):
             self._raise_error()
         result = mysql_store_result(self.conn.conn)
         cdef MYSQL_ROW row
         if result:
             self._store_description(result)
-            row = mysql_fetch_row(result)
-            while row:
-                row = mysql_fetch_row(result)
-            mysql_free_result(result)
+            self._result = result
 

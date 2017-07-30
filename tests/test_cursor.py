@@ -18,6 +18,13 @@ def test_iterating_over_cursor(db):
         assert not set(test_values) ^ set(ids)
 
 
+def test_iterate_without_execute(db):
+    with pytest.raises(ProgrammingError):
+        with db.cursor() as cursor:
+            for (test,) in cursor:
+                assert not test
+
+
 def test_cursor_close(db):
     cursor = db.cursor()
     cursor.execute('select 1')

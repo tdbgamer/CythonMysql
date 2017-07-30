@@ -1,5 +1,5 @@
 import pytest
-from datetime import datetime
+from datetime import datetime, date, time
 
 from mysql.exceptions import ProgrammingError
 
@@ -22,12 +22,19 @@ def test_iterating_over_cursor(db):
 
 def test_date_types(db):
     with db.cursor() as cursor:
-        cursor.execute("create table blah (test_timestamp TIMESTAMP, test_datetime DATETIME);")
-        cursor.execute("insert into blah (test_timestamp, test_datetime) values (CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)")
-        cursor.execute("select test_timestamp, test_datetime from blah")
-        for (t, d) in cursor:
-            assert isinstance(t, datetime)
-            assert isinstance(d, datetime)
+        cursor.execute("create table blah"
+                       "(test_timestamp TIMESTAMP, test_datetime DATETIME, test_date DATE,"
+                       "test_time TIME, test_year YEAR);")
+        cursor.execute("insert into blah"
+                       "(test_timestamp, test_datetime, test_date, test_time, test_year)"
+                       "values (CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_DATE, CURRENT_TIME, '2017')")
+        cursor.execute("select test_timestamp, test_datetime, test_date, test_time, test_year from blah")
+        for (ts, dt, d, t, y) in cursor:
+            assert isinstance(ts, datetime)
+            assert isinstance(dt, datetime)
+            assert isinstance(d, date)
+            assert isinstance(t, time)
+            assert isinstance(y, int)
 
 
 def test_cursor_close(db):

@@ -15,3 +15,4 @@ cdef class Cursor:
     cdef _raise_error(self)
     cdef MYSQL_ROW _get_row(self)
     cdef _has_executed(self)
+    cdef _free_result(self)

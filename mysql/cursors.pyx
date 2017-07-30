@@ -12,8 +12,12 @@ cdef class Cursor:
         self._executed = False
 
     def __dealloc__(self):
+        self._free_result()
+
+    cdef _free_result(self):
         if self._result:
             mysql_free_result(self._result)
+            self._result = NULL
 
     cdef _is_closed(self):
         if not self.conn.conn:
@@ -50,6 +54,7 @@ cdef class Cursor:
             raise ProgrammingError('execute() has not been called yet')
 
     def close(self):
+        self._free_result()
         self.closed = 1
 
     def __iter__(self):

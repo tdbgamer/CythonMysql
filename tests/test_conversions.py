@@ -45,8 +45,17 @@ def test_numeric_types(db):
 def test_none(db):
     with db.cursor() as cursor:
         cursor.execute("create table blah (id INT AUTO_INCREMENT primary key, "
-                       "test_null DATETIME);")
+                       "test_null VARCHAR(255));")
         cursor.execute("insert into blah (test_null) values (NULL);")
         cursor.execute("select test_null from blah")
         for n, in cursor:
             assert n is None
+
+def test_not_none(db):
+    with db.cursor() as cursor:
+        cursor.execute("create table blah (id INT AUTO_INCREMENT primary key, "
+                       "test_not_null VARCHAR(255));")
+        cursor.execute("insert into blah (test_not_null) values ('')")
+        cursor.execute("select test_not_null from blah")
+        for nn, in cursor:
+            assert isinstance(nn, str)

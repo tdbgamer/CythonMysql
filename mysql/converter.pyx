@@ -14,7 +14,7 @@ m_to_p = {
     MYSQL_TYPE_LONG: int,
     MYSQL_TYPE_FLOAT: float,
     MYSQL_TYPE_DOUBLE: float,
-    MYSQL_TYPE_NULL: None,
+    MYSQL_TYPE_NULL: lambda x: None,
     MYSQL_TYPE_TIMESTAMP: lambda x: datetime.strptime(x.decode('utf-8'), '%Y-%m-%d %H:%M:%S'),
     MYSQL_TYPE_LONGLONG: int,
     MYSQL_TYPE_INT24: int,
@@ -42,7 +42,10 @@ cdef python_to_mysql(object field):
 
 cdef mysql_to_python(char * data, object description, unsigned long length):
     try:
-        return m_to_p[description[1]](data[:length])
+        byte_data = data[:length]
+        if byte_data == b"":
+            return None
+        return m_to_p[description[1]](byte_data)
     except Exception as e:
         print(e)
         return data[:length]

@@ -42,14 +42,20 @@ def test_numeric_types(db):
             assert isinstance(i24, int)
             assert isinstance(bit, int)
 
-def test_none(db):
+def test_none_against_empty_string(db):
     with db.cursor() as cursor:
         cursor.execute("create table blah (id INT AUTO_INCREMENT primary key, "
                        "test_null VARCHAR(255));")
         cursor.execute("insert into blah (test_null) values (NULL);")
+        cursor.execute("insert into blah (test_null) values ('');")
         cursor.execute("select test_null from blah")
-        for n, in cursor:
-            assert n is None
+        cursor_iter = iter(cursor)
+
+        first, = next(cursor_iter)
+        second, = next(cursor_iter)
+
+        assert first is None
+        assert isinstance(second, str)
 
 def test_not_none(db):
     with db.cursor() as cursor:

@@ -42,10 +42,9 @@ cdef python_to_mysql(object field):
 
 cdef mysql_to_python(char * data, object description, unsigned long length):
     try:
-        byte_data = data[:length]
-        if byte_data == b"":
+        if data == NULL:
             return None
-        return m_to_p[description[1]](byte_data)
+        return m_to_p[description[1]](data[:length])
     except Exception as e:
         print(e)
         return data[:length]

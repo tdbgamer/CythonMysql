@@ -56,12 +56,3 @@ def test_none_against_empty_string(db):
 
         assert first is None
         assert isinstance(second, str)
-
-def test_not_none(db):
-    with db.cursor() as cursor:
-        cursor.execute("create table blah (id INT AUTO_INCREMENT primary key, "
-                       "test_not_null VARCHAR(255));")
-        cursor.execute("insert into blah (test_not_null) values ('')")
-        cursor.execute("select test_not_null from blah")
-        for nn, in cursor:
-            assert isinstance(nn, str)

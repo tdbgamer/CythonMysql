@@ -7,4 +7,4 @@ test:
 	PYTHONPATH=${PWD} py.test --verbose --color=yes -s
 
 docker-up:
-	(cd mysql_server && docker-compose up -d)
+	(mkdir -p mysql_server && cd mysql_server && docker-compose up -d)
